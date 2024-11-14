@@ -9,13 +9,14 @@ public enum States // used by all logic
     Idle,
     Walk,
     Jump,
+    Dead,
 };
 
 public class PlayerScript : MonoBehaviour
 {
     States state;
 
-
+    float timer = 0f;
     Rigidbody rb;
     bool grounded;
 
@@ -54,6 +55,10 @@ public class PlayerScript : MonoBehaviour
         {
             PlayerWalk();
         }
+        if ( state == States.Dead )
+        {
+            PlayerDead();
+        }
     }
 
 
@@ -68,12 +73,12 @@ public class PlayerScript : MonoBehaviour
 
         if( Input.GetKey("left"))
         {
-            transform.Rotate( 0, 0.5f, 0, Space.Self );
+            transform.Rotate( 0, -0.5f, 0, Space.Self );
 
         }
         if( Input.GetKey("right"))
         {
-            transform.Rotate( 0,-0.5f, 0, Space.Self );
+            transform.Rotate( 0,0.5f, 0, Space.Self );
         }
 
         if( Input.GetKey("up"))
@@ -100,7 +105,31 @@ public class PlayerScript : MonoBehaviour
         //magnitude = the player's speed
         float magnitude = rb.velocity.magnitude;
 
-        rb.AddForce(transform.forward * 5f);
+       if (Input.GetKey("up"))
+       {
+            rb.AddForce(transform.forward * 5f);
+       }
+        
+       else if (!Input.GetKey("up") && magnitude < 0.1f)
+       {
+            state = States.Idle;
+       }
+    }
+    void PlayerDead()
+    {
+        timer = timer - Time.deltaTime;
+        if (timer < 0)
+        {
+            rb.freezeRotation = false;
+            Quaternion.Euler(45, 0, 0);
+            state = States.Idle;
+            transform.rotation = Quaternion.identity;
+
+        }
+
+        if (Input.GetKey("r"))
+        {
+        }
     }
 
 
@@ -111,8 +140,15 @@ public class PlayerScript : MonoBehaviour
             grounded=true;
             print("landed!");
         }
-    }
+        if ( col.gameObject.tag == "Enemy")
+        {
+            state=States.Dead;
+            timer = 2;
+        } 
 
+
+    }
+   
 
     private void OnGUI()
     {
