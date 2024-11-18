@@ -18,11 +18,13 @@ public class PlayerScript : MonoBehaviour
     States state;
 
     float timer = 0f;
+    float bulletTimer = 5f;
     Rigidbody rb;
     bool grounded;
     public static int playerHealth;
     public GameObject bullet;
     public GameObject cannon;
+    GameObject clone;
 
     // Start is called before the first frame update
     void Start()
@@ -90,6 +92,10 @@ public class PlayerScript : MonoBehaviour
         {
             state = States.Walk;
         }
+        if (Input.GetKey("down"))
+        {
+            state = States.Walk;
+        }
         Shooting();
     }
 
@@ -111,18 +117,21 @@ public class PlayerScript : MonoBehaviour
         //magnitude = the player's speed
         float magnitude = rb.velocity.magnitude;
 
-       if (Input.GetKey("up"))
-       {
+        if (Input.GetKey("up"))
+        {
             rb.AddForce(transform.forward * 5f);
-       }
-        
-       else if (magnitude < 0.1f)
-       {
-            state = States.Idle;
-       }
-       Shooting();
-       PlayerJumping();
-       PlayerIdle();
+        }
+        if (Input.GetKey("down"))
+        {
+        rb.AddForce(transform.forward * -5f);
+        }
+        else if (magnitude < 0.1f)
+        {
+        state = States.Idle;
+        }
+        PlayerJumping();
+        Shooting();
+        PlayerIdle();
     }
     void PlayerDead()
     {
@@ -163,6 +172,7 @@ public class PlayerScript : MonoBehaviour
     void Shooting()
     {
         int moveDirection = 1;
+
         if (Input.GetKeyDown("a"))
         {
             GameObject clone;
@@ -170,6 +180,7 @@ public class PlayerScript : MonoBehaviour
             Rigidbody rb = clone.GetComponent<Rigidbody>();
             rb.velocity = transform.forward * 15;
             rb.transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+                Destroy(gameObject);
         }
     }
 
