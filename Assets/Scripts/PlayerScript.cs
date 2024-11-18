@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,12 +20,16 @@ public class PlayerScript : MonoBehaviour
     float timer = 0f;
     Rigidbody rb;
     bool grounded;
+    public static int playerHealth;
+    public GameObject bullet;
+    public GameObject cannon;
 
     // Start is called before the first frame update
     void Start()
     {
         state = States.Idle;
         rb = GetComponent<Rigidbody>();
+        playerHealth = 5;
     }
 
     // Update is called once per frame
@@ -85,7 +90,7 @@ public class PlayerScript : MonoBehaviour
         {
             state = States.Walk;
         }
-
+        Shooting();
     }
 
     void PlayerJumping()
@@ -96,6 +101,7 @@ public class PlayerScript : MonoBehaviour
             //player has landed on floor
             state = States.Idle;
         }
+        Shooting();
     }
 
     void PlayerWalk()
@@ -110,10 +116,13 @@ public class PlayerScript : MonoBehaviour
             rb.AddForce(transform.forward * 5f);
        }
         
-       else if (!Input.GetKey("up") && magnitude < 0.1f)
+       else if (magnitude < 0.1f)
        {
             state = States.Idle;
        }
+       Shooting();
+       PlayerJumping();
+       PlayerIdle();
     }
     void PlayerDead()
     {
@@ -124,11 +133,6 @@ public class PlayerScript : MonoBehaviour
             Quaternion.Euler(45, 0, 0);
             state = States.Idle;
             transform.rotation = Quaternion.identity;
-
-        }
-
-        if (Input.GetKey("r"))
-        {
         }
     }
 
@@ -140,15 +144,34 @@ public class PlayerScript : MonoBehaviour
             grounded=true;
             print("landed!");
         }
-        if ( col.gameObject.tag == "Enemy")
+        if (col.gameObject.tag == "Enemy")
+        {
+            playerHealth--;
+            print("Player Health = " + playerHealth);
+        }
+        if (PlayerScript.playerHealth < 1)
         {
             state=States.Dead;
             timer = 2;
-        } 
-
-
+            transform.position = new Vector3 (8,1,-3);
+            state = States.Idle;
+            playerHealth=5;
+        }
+       
+        
     }
-   
+    void Shooting()
+    {
+        int moveDirection = 1;
+        if (Input.GetKeyDown("a"))
+        {
+            GameObject clone;
+            clone = Instantiate(bullet, cannon.transform.position, cannon.transform.rotation);
+            Rigidbody rb = clone.GetComponent<Rigidbody>();
+            rb.velocity = transform.forward * 15;
+            rb.transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+        }
+    }
 
     private void OnGUI()
     {
