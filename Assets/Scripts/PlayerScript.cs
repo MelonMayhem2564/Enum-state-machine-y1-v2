@@ -2,8 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-
 public enum States // used by all logic
 {
     None,
@@ -18,7 +16,6 @@ public class PlayerScript : MonoBehaviour
     States state;
 
     float timer = 0f;
-    float bulletTimer = 5f;
     Rigidbody rb;
     bool grounded;
     public static int playerHealth;
@@ -32,6 +29,7 @@ public class PlayerScript : MonoBehaviour
         state = States.Idle;
         rb = GetComponent<Rigidbody>();
         playerHealth = 5;
+        LevelManager.instance.SetPlayerHealth(50);
     }
 
     // Update is called once per frame
@@ -75,7 +73,8 @@ public class PlayerScript : MonoBehaviour
         {
             // simulate jump
             state = States.Jump;
-            rb.velocity = new Vector3( 0,10,0);
+            rb.linearVelocity = new Vector3( 0,10,0);
+            AudioManager.instance.PlayClip(2);
         }
 
         if( Input.GetKey("left"))
@@ -104,7 +103,6 @@ public class PlayerScript : MonoBehaviour
         // player is jumping, check for hitting the ground
         if( grounded == true )
         {
-            //player has landed on floor
             state = States.Idle;
         }
         Shooting();
@@ -112,10 +110,10 @@ public class PlayerScript : MonoBehaviour
 
     void PlayerWalk()
     {
-        rb.velocity = Vector3.ClampMagnitude(rb.velocity, 5f);
+        rb.linearVelocity = Vector3.ClampMagnitude(rb.linearVelocity, 5f);
 
         //magnitude = the player's speed
-        float magnitude = rb.velocity.magnitude;
+        float magnitude = rb.linearVelocity.magnitude;
 
         if (Input.GetKey("up"))
         {
@@ -160,27 +158,23 @@ public class PlayerScript : MonoBehaviour
         }
         if (PlayerScript.playerHealth < 1)
         {
-            state=States.Dead;
-            timer = 2;
+            state =States.Dead;
             transform.position = new Vector3 (8,1,-3);
             state = States.Idle;
             playerHealth=5;
+            AudioManager.instance.PlayClip(0);
         }
-       
-        
     }
     void Shooting()
     {
-        int moveDirection = 1;
-
         if (Input.GetKeyDown("a"))
         {
             GameObject clone;
             clone = Instantiate(bullet, cannon.transform.position, cannon.transform.rotation);
             Rigidbody rb = clone.GetComponent<Rigidbody>();
-            rb.velocity = transform.forward * 15;
+            rb.linearVelocity = transform.forward * 15;
             rb.transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z);
-                Destroy(gameObject);
+            AudioManager.instance.PlayClip(1);
         }
     }
 
@@ -192,6 +186,13 @@ public class PlayerScript : MonoBehaviour
         // define debug text area
         GUILayout.BeginArea(new Rect(10f, 450f, 1600f, 1600f));
         GUILayout.Label($"<size=16>{text}</size>");
+        GUILayout.EndArea();
+
+        int health = LevelManager.instance.GetPlayerHealth();
+        string text1 = "Player Health: " + health;
+
+        GUILayout.BeginArea(new Rect(10f, 10f, 1600f, 1600f));
+        GUILayout.Label($"<size=24>{text1}");
         GUILayout.EndArea();
     }
 }
