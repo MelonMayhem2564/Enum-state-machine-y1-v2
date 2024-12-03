@@ -106,6 +106,7 @@ public class PlayerScript : MonoBehaviour
             state = States.Idle;
         }
         Shooting();
+        PlayerWalk();
     }
 
     void PlayerWalk()
@@ -127,7 +128,6 @@ public class PlayerScript : MonoBehaviour
         {
         state = States.Idle;
         }
-        PlayerJumping();
         Shooting();
         PlayerIdle();
     }
